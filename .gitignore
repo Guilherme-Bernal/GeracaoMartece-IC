@@ -10,3 +10,7 @@ core/.venv/
 .ipynb_checkpoints/
 notebooks/omni_data/
 target/
+frontend/node_modules/
+frontend/dist/
+backend/omni_data/
+backend/__pycache__/
