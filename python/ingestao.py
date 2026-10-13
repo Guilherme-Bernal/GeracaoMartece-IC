@@ -1,4 +1,23 @@
-﻿import numpy as np
+﻿import sys
+import types
+
+if "netCDF4" not in sys.modules:
+    try:
+        import netCDF4
+    except ImportError:
+        fake_netcdf4 = types.ModuleType("netCDF4")
+
+        class _DatasetIndisponivel:
+            def __init__(self, *args, **kwargs):
+                raise RuntimeError(
+                    "netCDF4 bloqueado pelo Smart App Control e nao e "
+                    "necessario para a ingestao OMNI deste projeto."
+                )
+
+        fake_netcdf4.Dataset = _DatasetIndisponivel
+        fake_netcdf4.num2date = lambda *a, **k: None
+        sys.modules["netCDF4"] = fake_netcdf4
+import numpy as np
 import pandas as pd
 import pyspedas
 from pyspedas.tplot_tools import get_data
@@ -19,7 +38,7 @@ def tvar_to_series(nome):
 def _ingerir_evento(trange):
     """Busca e trata (gaps, AE opcional) os dados OMNI de um evento. Usado
     tanto por rodar_pipeline_tempestade quanto por rodar_pipeline_com_holdout."""
-    var_names_evt = pyspedas.omni.data(trange=trange, datatype='1min', time_clip=True)
+    var_names_evt = pyspedas.omni.data(trange=trange, datatype='1min', time_clip=True, no_update=True)
 
     by_evt = tvar_to_series('BY_GSM')
     bz_evt = tvar_to_series('BZ_GSM')
@@ -125,3 +144,4 @@ def rodar_pipeline_com_holdout(nome_evento, trange, inicio_tempestade, fim_tempe
 
     print()
     return resultado
+
