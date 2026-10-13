@@ -145,3 +145,26 @@ def rodar_pipeline_com_holdout(nome_evento, trange, inicio_tempestade, fim_tempe
     print()
     return resultado
 
+
+def detectar_janela_tempestade(df, limiar_quiet=-20.0, frac_recuperacao=0.5):
+    """Detecta automaticamente a janela de tempestade a partir do Dst
+    observado, sem depender de inspecao visual manual. O minimo do Dst
+    marca o pico da tempestade; o inicio e o ultimo instante antes do pico
+    em que o Dst estava acima do limiar de quietude (limiar_quiet, em nT);
+    o fim e o primeiro instante depois do pico em que o Dst recupera uma
+    fracao (frac_recuperacao) do deficit do pico -- ex.: 0.5 = recuperou
+    metade da queda."""
+    dst = df['Dst']
+    t_min = dst.idxmin()
+    pico = dst.loc[t_min]
+
+    antes = dst.loc[:t_min]
+    candidatos_inicio = antes[antes >= limiar_quiet]
+    inicio = candidatos_inicio.index[-1] if len(candidatos_inicio) else antes.index[0]
+
+    alvo_recuperacao = pico * (1 - frac_recuperacao)
+    depois = dst.loc[t_min:]
+    candidatos_fim = depois[depois >= alvo_recuperacao]
+    fim = candidatos_fim.index[0] if len(candidatos_fim) else depois.index[-1]
+
+    return inicio, fim

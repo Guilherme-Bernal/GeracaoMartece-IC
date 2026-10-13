@@ -1,4 +1,26 @@
-﻿import numpy as np
+﻿import sys
+import types
+
+if "netCDF4" not in sys.modules:
+    try:
+        import netCDF4
+    except ImportError:
+        fake_netcdf4 = types.ModuleType("netCDF4")
+
+        class _DatasetIndisponivel:
+            def __init__(self, *args, **kwargs):
+                raise RuntimeError(
+                    "netCDF4 bloqueado pelo Smart App Control e nao e "
+                    "necessario para a ingestao OMNI deste projeto."
+                )
+
+        fake_netcdf4.Dataset = _DatasetIndisponivel
+        fake_netcdf4.num2date = lambda *a, **k: None
+        sys.modules["netCDF4"] = fake_netcdf4
+import os
+
+import cdflib
+import numpy as np
 import pandas as pd
 import pyspedas
 
@@ -99,15 +121,44 @@ def estimar_oval_auroral(kp):
     return 64.6 - 2.14 * np.asarray(kp, dtype=float)
 
 
+def _localizar_cdf_horario(ano):
+    """Procura o CDF horario do OMNI2 (um arquivo por ano) nas pastas de
+    cache conhecidas do projeto."""
+    candidatos = [
+        os.path.join('omni_data', 'hourly', str(ano), f'omni2_h0_mrg1hr_{ano}0101_v01.cdf'),
+        os.path.join('..', 'notebooks', 'omni_data', 'hourly', str(ano), f'omni2_h0_mrg1hr_{ano}0101_v01.cdf'),
+        os.path.join('..', 'backend', 'omni_data', 'omni_data', 'hourly', str(ano), f'omni2_h0_mrg1hr_{ano}0101_v01.cdf'),
+    ]
+    for caminho in candidatos:
+        if os.path.exists(caminho):
+            return caminho
+    raise FileNotFoundError(
+        f"CDF horario de {ano} nao encontrado em cache local ({candidatos}). "
+        f"Baixe manualmente em "
+        f"https://spdf.gsfc.nasa.gov/pub/data/omni/omni_cdaweb/hourly/{ano}/omni2_h0_mrg1hr_{ano}0101_v01.cdf "
+        f"e coloque em notebooks/omni_data/hourly/{ano}/."
+    )
+
+
 def obter_kp_horario(trange):
-    """Busca o indice Kp (resolucao horaria) do OMNI. Kp no OMNI vem *10
-    (ex: 37 = Kp 3.7), por isso a divisao."""
-    var_names = pyspedas.omni.data(trange=trange, datatype='hourly', time_clip=True)
-    candidatos = ['KP', 'Kp_index', 'KP1800']
-    nome_var = next((c for c in candidatos if c in var_names), None)
-    if nome_var is None:
-        raise ValueError(f"Variavel de Kp nao encontrada. Disponiveis: {var_names}")
-    return tvar_to_series(nome_var) / 10.0
+    """Le o indice Kp (resolucao horaria) direto do CDF local do OMNI2, sem
+    passar pelo pyspedas -- evita a checagem de versao contra o indice
+    remoto da NASA, que trava nesta rede mesmo com o arquivo ja em cache.
+    O Kp no CDF vem *10 (ex: 23 = Kp 2.3)."""
+    inicio = pd.Timestamp(trange[0])
+    fim = pd.Timestamp(trange[1])
+
+    series = []
+    for ano in range(inicio.year, fim.year + 1):
+        caminho = _localizar_cdf_horario(ano)
+        cdf = cdflib.CDF(caminho)
+        epoch = cdf.varget('Epoch')
+        kp = cdf.varget('KP')
+        tempo = pd.to_datetime(cdflib.cdfepoch.to_datetime(epoch))
+        series.append(pd.Series(kp.astype(float) / 10.0, index=tempo))
+
+    kp_total = pd.concat(series).sort_index()
+    return kp_total[~kp_total.index.duplicated(keep='first')]
 
 
 def analisar_oval(trange, inicio_tempestade, fim_tempestade, nome_evento):
@@ -123,3 +174,4 @@ def analisar_oval(trange, inicio_tempestade, fim_tempestade, nome_evento):
     print()
 
     return {'nome': nome_evento, 'kp_max': kp_max, 'latitude_oval_min': lat_min}
+
