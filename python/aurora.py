@@ -17,12 +17,9 @@ if "netCDF4" not in sys.modules:
         fake_netcdf4.Dataset = _DatasetIndisponivel
         fake_netcdf4.num2date = lambda *a, **k: None
         sys.modules["netCDF4"] = fake_netcdf4
-import os
-
-import cdflib
 import numpy as np
 import pandas as pd
-import pyspedas
+import requests
 
 from ingestao import tvar_to_series
 
@@ -59,10 +56,7 @@ def _ajustar_r2(x, y, dt, lag_amostras, espaco_log):
 
 def _melhor_lag_r2(coupling_arr, ae_arr, dt, lag_max_min=60, passo_min=5, espaco_log=False):
     """Testa deslocamentos temporais (lag) entre a funcao de acoplamento e o AE,
-    retornando o lag (em minutos) que maximiza o R^2. Com espaco_log=True, ajusta
-    em escala log-log (lei de potencia), como no metodo original de Newell et al.
-    (2007) -- mais robusto a eventos com grande dinamica de valores (tempestades
-    extremas)."""
+    retornando o lag (em minutos) que maximiza o R^2."""
     passo_amostras = max(1, round(passo_min * 60 / dt))
     lag_max_amostras = round(lag_max_min * 60 / dt)
 
@@ -79,11 +73,7 @@ def _melhor_lag_r2(coupling_arr, ae_arr, dt, lag_max_min=60, passo_min=5, espaco
 
 
 def analisar_ae(df, Q_akasofu, Q_newell, mask, dt, nome_evento):
-    """Correlaciona Akasofu e Newell com o indice AE (eletrojato auroral),
-    proxy direto de atividade auroral -- diferente do Dst (corrente de anel).
-    Testa ajuste linear e log-log (lei de potencia) lado a lado: eventos
-    extremos (indices saturados, ex: Kp=9.0) tendem a quebrar a relacao
-    linear, e o log-log pode recuperar parte da correlacao nesses casos."""
+    """Correlaciona Akasofu e Newell com o indice AE."""
     if 'AE' not in df.columns:
         print(f"[{nome_evento}] AE_INDEX nao disponivel para este evento -- pulando.")
         return None
@@ -116,49 +106,25 @@ def analisar_ae(df, Q_akasofu, Q_newell, mask, dt, nome_evento):
 
 
 def estimar_oval_auroral(kp):
-    """Latitude geomagnetica aproximada da borda equatorial do ovalo auroral,
-    em funcao do Kp (aprox. empirica, estilo Starkov 1994 / Holzworth & Meng 1975)."""
+    """Latitude geomagnetica aproximada da borda equatorial do ovalo auroral."""
     return 64.6 - 2.14 * np.asarray(kp, dtype=float)
 
 
-def _localizar_cdf_horario(ano):
-    """Procura o CDF horario do OMNI2 (um arquivo por ano) nas pastas de
-    cache conhecidas do projeto."""
-    candidatos = [
-        os.path.join('omni_data', 'hourly', str(ano), f'omni2_h0_mrg1hr_{ano}0101_v01.cdf'),
-        os.path.join('..', 'notebooks', 'omni_data', 'hourly', str(ano), f'omni2_h0_mrg1hr_{ano}0101_v01.cdf'),
-        os.path.join('..', 'backend', 'omni_data', 'omni_data', 'hourly', str(ano), f'omni2_h0_mrg1hr_{ano}0101_v01.cdf'),
-    ]
-    for caminho in candidatos:
-        if os.path.exists(caminho):
-            return caminho
-    raise FileNotFoundError(
-        f"CDF horario de {ano} nao encontrado em cache local ({candidatos}). "
-        f"Baixe manualmente em "
-        f"https://spdf.gsfc.nasa.gov/pub/data/omni/omni_cdaweb/hourly/{ano}/omni2_h0_mrg1hr_{ano}0101_v01.cdf "
-        f"e coloque em notebooks/omni_data/hourly/{ano}/."
-    )
-
-
 def obter_kp_horario(trange):
-    """Le o indice Kp (resolucao horaria) direto do CDF local do OMNI2, sem
-    passar pelo pyspedas -- evita a checagem de versao contra o indice
-    remoto da NASA, que trava nesta rede mesmo com o arquivo ja em cache.
-    O Kp no CDF vem *10 (ex: 23 = Kp 2.3)."""
-    inicio = pd.Timestamp(trange[0])
-    fim = pd.Timestamp(trange[1])
+    """Busca o indice Kp (resolucao de 3h, padrao oficial) via API publica
+    do GFZ Potsdam -- alternativa ao OMNI/pyspedas, que evita o bloqueio de
+    rede contra o servidor da NASA observado nesta maquina."""
+    inicio = pd.Timestamp(trange[0]).strftime('%Y-%m-%dT%H:%M:%SZ')
+    fim = pd.Timestamp(trange[1]).strftime('%Y-%m-%dT%H:%M:%SZ')
+    url = f"https://kp.gfz-potsdam.de/app/json/?start={inicio}&end={fim}&index=Kp"
 
-    series = []
-    for ano in range(inicio.year, fim.year + 1):
-        caminho = _localizar_cdf_horario(ano)
-        cdf = cdflib.CDF(caminho)
-        epoch = cdf.varget('Epoch')
-        kp = cdf.varget('KP')
-        tempo = pd.to_datetime(cdflib.cdfepoch.to_datetime(epoch))
-        series.append(pd.Series(kp.astype(float) / 10.0, index=tempo))
+    resp = requests.get(url, timeout=15)
+    resp.raise_for_status()
+    dados = resp.json()
 
-    kp_total = pd.concat(series).sort_index()
-    return kp_total[~kp_total.index.duplicated(keep='first')]
+    tempo = pd.to_datetime(dados["datetime"]).tz_localize(None)
+    kp = pd.Series(dados["Kp"], index=tempo)
+    return kp
 
 
 def analisar_oval(trange, inicio_tempestade, fim_tempestade, nome_evento):

@@ -1,6 +1,7 @@
 ﻿<script setup>
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
-import * as THREE from 'three'
+import { ref, onMounted, onBeforeUnmount, watch } from "vue"
+import * as THREE from "three"
+import { t, nomeEvento } from "../i18n.js"
 
 const props = defineProps({ evento: Object })
 const container = ref(null)
@@ -26,7 +27,7 @@ function criarEstrelas() {
     pos[i * 3 + 2] = r * Math.cos(phi)
   }
   const geo = new THREE.BufferGeometry()
-  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3))
+  geo.setAttribute("position", new THREE.BufferAttribute(pos, 3))
   const mat = new THREE.PointsMaterial({ color: 0x8893b8, size: 0.04, transparent: true, opacity: 0.65 })
   estrelas = new THREE.Points(geo, mat)
   scene.add(estrelas)
@@ -45,7 +46,7 @@ function criarVentoSolar() {
   ventoVel = new Float32Array(n)
   for (let i = 0; i < n; i++) resetParticulaVento(i)
   ventoGeo = new THREE.BufferGeometry()
-  ventoGeo.setAttribute('position', new THREE.BufferAttribute(ventoPos, 3))
+  ventoGeo.setAttribute("position", new THREE.BufferAttribute(ventoPos, 3))
   const mat = new THREE.PointsMaterial({ color: 0x9b8cff, size: 0.05, transparent: true, opacity: 0.85 })
   ventoPoints = new THREE.Points(ventoGeo, mat)
   scene.add(ventoPoints)
@@ -161,9 +162,7 @@ onBeforeUnmount(() => {
   <div class="cena-wrap">
     <div ref="container" class="cena"></div>
     <p class="legenda" v-if="evento">
-      Vento solar simulado (partículas violeta) chegando à magnetosfera; o ovalo e as
-      cortinas reagem ao pico de Dst de <strong>{{ evento.nome }}</strong>, a mesma
-      intensidade que alimenta a calibração do modelo ao lado.
+      {{ t("cenaLegendaPre") }} <strong>{{ nomeEvento(evento) }}</strong>{{ t("cenaLegendaPos") }}
     </p>
   </div>
 </template>
