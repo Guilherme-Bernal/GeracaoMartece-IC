@@ -10,7 +10,7 @@ const erro = ref(null)
 
 async function carregar() {
   try {
-    const resp = await fetch('http://localhost:8000/api/resultados')
+    const resp = await fetch('./resultados.json')
     if (!resp.ok) throw new Error('Falha ao buscar resultados')
     const dados = await resp.json()
     eventos.value = dados.eventos
@@ -254,3 +254,4 @@ header h1 {
 .metodologia a { color: #3ddc84; }
 .metodologia code { font-family: 'IBM Plex Mono', monospace; color: #c3c9db; }
 </style>
+
