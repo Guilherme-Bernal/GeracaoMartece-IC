@@ -6,6 +6,12 @@ export function toggleLocale() {
   locale.value = locale.value === "pt" ? "en" : "pt"
 }
 
+export function formatarNumero(valor, casas = 2) {
+  if (valor === null || valor === undefined) return "-"
+  const loc = locale.value === "pt" ? "pt-BR" : "en-US"
+  return Number(valor).toLocaleString(loc, { minimumFractionDigits: casas, maximumFractionDigits: casas })
+}
+
 const messages = {
   pt: {
     kicker: "Iniciação Científica · Geração Marte",
@@ -356,5 +362,6 @@ export const glossario = [
     ],
   },
 ]
+
 
 
