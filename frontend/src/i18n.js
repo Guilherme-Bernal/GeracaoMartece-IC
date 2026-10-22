@@ -74,6 +74,8 @@ const messages = {
       uma solução analítica, as funções de acoplamento e o ajuste de previsão de AE. Código
       completo e reprodutível no`,
     repositorio: "repositório",
+    licencaBadge: "Licença: GPLv3",
+    deployBadge: "Deploy: Vercel",
     dstObservado: "Dst observado",
     dstAxis: "Dst (nT)",
     calibradoLabel: "Calibrado",
@@ -162,6 +164,8 @@ const messages = {
       analytical solution, the coupling functions, and the AE prediction fit. Full,
       reproducible code in the`,
     repositorio: "repository",
+    licencaBadge: "License: GPLv3",
+    deployBadge: "Deploy: Vercel",
     dstObservado: "Observed Dst",
     dstAxis: "Dst (nT)",
     calibradoLabel: "Calibrated",
@@ -352,4 +356,5 @@ export const glossario = [
     ],
   },
 ]
+
 

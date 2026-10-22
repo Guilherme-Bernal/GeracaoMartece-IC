@@ -133,6 +133,13 @@ const stats = computed(() => {
           {{ t("metodologia") }}
           <a href="https://github.com/Guilherme-Bernal/GeracaoMartece-IC" target="_blank" rel="noopener">{{ t("repositorio") }}</a>.
         </p>
+        <div class="badges">
+          <a class="badge" href="https://github.com/Guilherme-Bernal/GeracaoMartece-IC" target="_blank" rel="noopener">
+            <span class="dot dot-github"></span>GitHub
+          </a>
+          <span class="badge"><span class="dot dot-license"></span>{{ t("licencaBadge") }}</span>
+          <span class="badge"><span class="dot dot-deploy"></span>{{ t("deployBadge") }}</span>
+        </div>
       </footer>
     </template>
   </div>
@@ -225,4 +232,19 @@ header h1 {
 .metodologia p { font-size: 12.5px; color: #8a93ab; line-height: 1.7; margin: 0; }
 .metodologia a { color: #3ddc84; }
 .metodologia code { font-family: "IBM Plex Mono", monospace; color: #c3c9db; }
+
+.badges { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+.badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 6px 13px; border-radius: 999px;
+  border: 1px solid rgba(231,236,246,0.14);
+  background: rgba(231,236,246,0.03);
+  color: #8a93ab; font-size: 12px; font-family: "IBM Plex Mono", monospace;
+  text-decoration: none; transition: border-color 0.15s, color 0.15s;
+}
+a.badge:hover { border-color: #3ddc84; color: #3ddc84; }
+.dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.dot-github { background: #c3c9db; }
+.dot-license { background: #9b8cff; }
+.dot-deploy { background: #3ddc84; }
 </style>
