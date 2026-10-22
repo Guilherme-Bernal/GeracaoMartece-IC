@@ -131,7 +131,7 @@ const stats = computed(() => {
       <footer class="metodologia">
         <p>
           {{ t("metodologia") }}
-          <a href="https://github.com/Guilherme-Bernal/GeracaoMartece-IC" target="_blank" rel="noopener">{{ t("repositorio") }}</a>.
+          {{ t("repositorio") }}.
         </p>
         <div class="badges">
           <a class="badge" href="https://github.com/Guilherme-Bernal/GeracaoMartece-IC" target="_blank" rel="noopener">
@@ -248,3 +248,4 @@ a.badge:hover { border-color: #3ddc84; color: #3ddc84; }
 .dot-license { background: #9b8cff; }
 .dot-deploy { background: #3ddc84; }
 </style>
+
