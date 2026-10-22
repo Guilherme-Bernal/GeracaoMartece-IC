@@ -12,7 +12,7 @@ const erro = ref(null)
 
 async function carregar() {
   try {
-    const resp = await fetch("./resultados.json")
+    const resp = await fetch("/resultados.json")
     if (!resp.ok) throw new Error("Falha ao buscar resultados")
     const dados = await resp.json()
     eventos.value = dados.eventos
