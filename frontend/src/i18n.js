@@ -8,6 +8,7 @@ export function toggleLocale() {
 
 const messages = {
   pt: {
+    kicker: "Iniciação Científica · Geração Marte",
     titulo: "Acoplamento solar-magnetosfera",
     subtitulo: `Dois modelos de acoplamento vento solar, Akasofu épsilon e Newell et al. (2007),
       previstos contra o índice Dst em cinco tempestades geomagnéticas históricas, com
@@ -93,6 +94,7 @@ const messages = {
     cenaLegendaPos: ", a mesma intensidade que alimenta a calibração do modelo ao lado.",
   },
   en: {
+    kicker: "Undergraduate Research · Geração Marte",
     titulo: "Solar wind–magnetosphere coupling",
     subtitulo: `Two solar wind coupling functions, Akasofu epsilon and Newell et al. (2007),
       tested against the Dst index across five historical geomagnetic storms, with genuine
@@ -350,3 +352,4 @@ export const glossario = [
     ],
   },
 ]
+

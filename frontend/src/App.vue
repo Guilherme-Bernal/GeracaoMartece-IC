@@ -47,6 +47,7 @@ const stats = computed(() => {
 <template>
   <div class="app">
     <header>
+      <p class="kicker">{{ t("kicker") }}</p>
       <div class="header-top">
         <h1>{{ t("titulo") }}</h1>
         <button
@@ -146,7 +147,11 @@ const stats = computed(() => {
   padding: 48px 24px 72px;
   font-family: "Inter", system-ui, sans-serif;
   color: #e7ecf6;
-  background: #0a0e1a;
+  background: radial-gradient(ellipse 1200px 500px at 50% -10%, rgba(61,220,132,0.07), transparent 60%), #0a0e1a;
+}
+.kicker {
+  font-family: "IBM Plex Mono", monospace; font-size: 12px; color: #3ddc84;
+  letter-spacing: 0.08em; text-transform: uppercase; margin: 0 0 10px;
 }
 .header-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 header h1 {
@@ -170,26 +175,27 @@ header h1 {
 
 .resumo {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 0; margin-top: 36px;
-  border-top: 1px solid rgba(231,236,246,0.12);
-  border-bottom: 1px solid rgba(231,236,246,0.12);
+  gap: 14px; margin-top: 36px;
 }
 .metrica-resumo {
-  padding: 18px 20px; display: flex; flex-direction: column; gap: 6px;
-  border-left: 1px solid rgba(231,236,246,0.12);
+  padding: 20px 22px; display: flex; flex-direction: column; gap: 6px;
+  background: linear-gradient(180deg, rgba(231,236,246,0.045), rgba(231,236,246,0.01));
+  border: 1px solid rgba(231,236,246,0.1);
+  border-radius: 10px;
+  transition: border-color 0.18s, transform 0.18s;
 }
-.metrica-resumo:first-child { border-left: none; }
+.metrica-resumo:hover { border-color: rgba(61,220,132,0.4); transform: translateY(-2px); }
 .metrica-resumo .numero { font-family: "IBM Plex Mono", monospace; font-size: 22px; color: #3ddc84; }
 .metrica-resumo .legenda { font-size: 12.5px; color: #8a93ab; line-height: 1.4; }
 
 .tabs { display: flex; gap: 8px; margin-top: 28px; flex-wrap: wrap; }
 .tabs button {
   background: transparent; border: 1px solid rgba(231,236,246,0.14);
-  color: #c3c9db; padding: 9px 16px; border-radius: 4px;
+  color: #c3c9db; padding: 9px 18px; border-radius: 999px;
   cursor: pointer; font-size: 13.5px; font-family: "Inter", sans-serif;
-  transition: border-color 0.15s, color 0.15s;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
 }
-.tabs button.ativo { border-color: #3ddc84; color: #3ddc84; }
+.tabs button.ativo { border-color: #3ddc84; color: #3ddc84; background: rgba(61,220,132,0.1); }
 .tabs button:hover:not(.ativo) { border-color: rgba(231,236,246,0.32); }
 
 .layout {
@@ -220,4 +226,3 @@ header h1 {
 .metodologia a { color: #3ddc84; }
 .metodologia code { font-family: "IBM Plex Mono", monospace; color: #c3c9db; }
 </style>
-
