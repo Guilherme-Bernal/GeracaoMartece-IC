@@ -3,3 +3,24 @@ body {
   margin: 0;
   background: #0a0e1a;
 }
+
+/* Scrollbar escura, combinando com o tema */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2a3350 #0a0e1a;
+}
+*::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+*::-webkit-scrollbar-track {
+  background: #0a0e1a;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: #2a3350;
+  border-radius: 8px;
+  border: 2px solid #0a0e1a;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #3ddc84;
+}
